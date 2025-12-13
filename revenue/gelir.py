@@ -95,3 +95,36 @@ class MembershipRevenuePayment(PaymentBase):
 
     def calculate_platform_share(self) -> float:
         return self.amount * self._platform_fee_rate
+    
+class SponsorshipPayment(PaymentBase):
+    def __init__( 
+        self, 
+        channel_id: str, 
+        amount: float, 
+        currency: str, 
+        period: str,
+        sponsor_name: str,
+        contract_id: str
+    ):
+        super().__init__(channel_id, amount, currency, period) 
+        self.sponsor_name = sponsor_name
+        self.contract_id = contract_id
+        self.is_invoice_sent = False
+
+    def calculate_tax(self) -> float:
+        return self.amount * 0.18
+
+    def get_payment_details(self) -> dict:
+        return {
+            "type": "Sponsorship",
+            "id": self.payment_id,
+            "amount": self.amount,
+            "sponsor": self.sponsor_name,
+            "contract": self.contract_id,
+            "invoice_sent": self.is_invoice_sent,
+            "status": self.status
+        }
+    
+    def mark_invoice_sent(self):
+        self.is_invoice_sent = True
+        self.add_log(f"Fatura sponsora ({self.sponsor_name}) gönderildi.")  
