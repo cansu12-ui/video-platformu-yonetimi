@@ -59,3 +59,39 @@ class AdRevenuePayment(PaymentBase):
         new_amount = (self.ad_impressions / 1000) * self.cpm_rate
         self.amount = new_amount
         self.add_log(f"Gösterim güncellendi: {new_count}. Yeni tutar: {self.amount}")
+
+class MembershipRevenuePayment(PaymentBase):
+    def __init__(
+        self, 
+        channel_id: str, 
+        amount: float, 
+        currency: str, 
+        period: str,
+        total_subscribers: int,
+        tier_breakdown: Dict[str, int]  
+    ):
+        super().__init__(channel_id, amount, currency, period) 
+        self.total_subscribers = total_subscribers
+        self.tier_breakdown = tier_breakdown
+        self._platform_fee_rate = 0.30 
+
+    def calculate_tax(self) -> float:
+        net_after_fee = self.amount * (1 - self._platform_fee_rate)
+        tax = net_after_fee * 0.20 
+        self.add_log(f"Platform kesintisi (%30) ve Vergi (%20) hesaplandı: {tax}")
+        return tax
+
+    def get_payment_details(self) -> dict:
+        return {
+            "type": "MembershipRevenue",
+            "id": self.payment_id,
+            "gross_amount": self.amount,
+            "platform_fee": self.amount * self._platform_fee_rate,
+            "currency": self.currency,
+            "subscriber_count": self.total_subscribers,
+            "tiers": self.tier_breakdown,
+            "status": self.status
+        }
+
+    def calculate_platform_share(self) -> float:
+        return self.amount * self._platform_fee_rate
