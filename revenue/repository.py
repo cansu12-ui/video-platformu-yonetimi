@@ -56,3 +56,12 @@ class InMemoryPaymentRepository(PaymentRepositoryInterface):
             del self._storage[payment_id]
             return True
         return False
+    
+    @classmethod
+    def get_db_info(cls):
+        return
+    
+    @staticmethod
+    def validate_currency_code(code: str) -> bool:
+        valid_codes = ["TRY", "USD", "EUR", "GBP"]
+        return code.upper() in valid_codes
