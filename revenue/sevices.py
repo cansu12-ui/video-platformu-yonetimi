@@ -111,14 +111,4 @@ class AnalyticsService:
             return "Önceki dönem verisi yok."
             
         growth = ((new_val - old_val) / old_val) * 100
-        return f"Büyüme Oranı: %{growth:.2f}"class AnalyticsService: 
-    @staticmethod
-    def compare_periods(report_old: Dict, report_new: Dict) -> str:
-        old_val = report_old.get("total_gross_income", 0)
-        new_val = report_new.get("total_gross_income", 0)
-        
-        if old_val == 0:
-            return "Önceki dönem verisi yok."
-            
-        growth = ((new_val - old_val) / old_val) * 100
         return f"Büyüme Oranı: %{growth:.2f}"
