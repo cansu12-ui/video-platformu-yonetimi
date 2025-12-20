@@ -8,7 +8,7 @@ from .demo import create_dummy_data
 
 def initialize_system() -> Tuple[RevenueService, AnalyticsService]:
     print("-" * 50)
-    print("Veritabanı  başlatılıyor.")
+    print("Veritabanı başlatılıyor.")
     repo = InMemoryPaymentRepository()
     
     print("Servis katmanları yükleniyor.")
@@ -32,7 +32,7 @@ def generate_report_cli(revenue_service: RevenueService):
     period = input("Dönemi (YYYY-MM) girin: ").strip()
 
     if not channel_id or not period:
-        print("Kanal ID veya DÖnem alanı boş bırakılamaz!")
+        print("Kanal ID veya Dönem alanı boş bırakılamaz!")
         return
 
     try:
@@ -43,7 +43,7 @@ def generate_report_cli(revenue_service: RevenueService):
         print(f" DÖNEM: {period}")
         print("="*50)
         
-        print(f"Toplam İşlem Sayısı   : {report['transaction_count']}")
+        print(f"Toplam İşlem Sayısı  : {report['transaction_count']}")
         
         currency = "TRY" 
         print(f"BRÜT GELİR            : {report['total_gross_income']:.2f} {currency}")
@@ -76,27 +76,50 @@ def main_menu():
         print("*"*45)
         print("1. Dönemsel Gelir Raporu Görüntüle")
         print("2. Düşük Ödemeleri Askıya Al")
-        print("3. Repository Bilgisini Göster ")
-        print("4. Para Birimi Doğrula")
-        print("5. çıkış")
+        print("3. Sistem Sağlık Durumu ")
+        print("4. En Çok Kazanan İşlemler")
+        print("5. Repository Bilgisini Göster")
+        print("6. Para Birimi Doğrula")
+        print("7. Çıkış")
         print("-" * 45)
 
-        choice = input("İşleminizi seçin (1-5): ").strip()
+        choice = input("işleminizi seçin (1-7): ").strip()
 
         if choice == '1':
             generate_report_cli(revenue_service)
             
         elif choice == '2':
-            threshold = 150.0
-            print(f" Minimum ödeme eşiği ({threshold} TRY) kontrol ediliyor.")
-            revenue_service.hold_low_payments(threshold)
-            print("İş kuralı uygulandı.")
+            try:
+                threshold_input = input("Minimum ödeme eşiği: ")
+                threshold = float(threshold_input) if threshold_input else 100.0
+                print(f" Minimum ödeme eşiği ({threshold} TRY) kontrol ediliyor.")
+                count = revenue_service.hold_low_payments(threshold)
+                print(f"İs kuralı uygulandı. {count} işlem askıya alındı.")
+            except ValueError:
+                print("Lütfen geçerli bir sayı girin.")
             
         elif choice == '3':
+            print("Sistem Analizi Yapılıyor.")
+            health = analytics_service.analyze_system_health(revenue_service.repo)
+            print(f"GENEL DURUM: {health['status']}")
+            print(f"Hata Oranı : {health['failure_rate']}")
+            print(f"Toplam Hacim: {health['total_volume']:.2f}")
+
+        elif choice == '4':
+            print("En Yüksek Hacimli işlemler Listeleniyor.")
+            tops = analytics_service.get_top_performers(revenue_service.repo, limit=5)
+            for t in tops:
+                print(f" -> {t}")
+
+        elif choice == '5':
             db_info = revenue_service.repo.get_db_info()
             print(f"[INFO] {db_info}")
+            print("Son Sistem Loglari:")
+            logs = revenue_service.repo.get_audit_logs(3)
+            for log in logs:
+                print(f" {log}")
             
-        elif choice == '4':
+        elif choice == '6':
             code = input("Doğrulanacak para birimi (USD, TRY, EUR, GBP ): ").upper()
             is_valid = revenue_service.repo.validate_currency_code(code)
             if is_valid:
@@ -104,12 +127,12 @@ def main_menu():
             else:
                 print(f"'{code}' geçersiz veya desteklenmiyor.")
             
-        elif choice == '5':
+        elif choice == '7':
             print("Sistemden çıkılıyor.")
             break
             
         else:
-            print("Geçersiz seçim! 1-5 arası rakam girin.")
+            print("Geçersiz seçim 1-7 arası rakam girin.")
 
 if __name__ == "__main__":
     try:
