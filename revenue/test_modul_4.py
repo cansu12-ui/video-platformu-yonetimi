@@ -44,8 +44,8 @@ def generate_report_cli(revenue_service: RevenueService):
         print("="*50)
         
         print(f"Toplam İşlem Sayısı  : {report['transaction_count']}")
+        currency = report.get('currency', 'TRY') 
         
-        currency = "TRY" 
         print(f"BRÜT GELİR            : {report['total_gross_income']:.2f} {currency}")
         print(f"TAHMİNİ VERGİ YÜKÜ    : {report['total_estimated_tax']:.2f} {currency}")
         print(f"TAHMİNİ NET GELİR     : {report['net_income_projection']:.2f} {currency}")
